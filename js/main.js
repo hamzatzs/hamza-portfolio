@@ -100,7 +100,17 @@
     });
     var rio = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add("is-in"); rio.unobserve(e.target); }
+        if (!e.isIntersecting) return;
+        var el = e.target;
+        el.classList.add("is-in");
+        rio.unobserve(el);
+        // After the entrance finishes, drop the reveal classes so they no longer
+        // override the element's own hover transform and transition.
+        var delay = parseFloat(el.style.getPropertyValue("--reveal-delay")) || 0;
+        setTimeout(function () {
+          el.classList.remove("reveal", "is-in");
+          el.style.removeProperty("--reveal-delay");
+        }, 900 + delay * 1000);
       });
     }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
     revealEls.forEach(function (el) { rio.observe(el); });

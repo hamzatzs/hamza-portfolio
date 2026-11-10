@@ -3,9 +3,8 @@
    for links and images. No build step required.
    ========================================================= */
 window.SITE_CONFIG = {
-  /* TODO: add your GitHub profile URL, e.g. "https://github.com/your-username".
-     While this is empty, every GitHub link on the site stays hidden. */
-  github: "",
+  /* GitHub profile. Leave empty ("") to hide every GitHub link. */
+  github: "https://github.com/hamzatzs",
 
   linkedin: "https://linkedin.com/in/hamza-t-795a20218",
   email: "hamza1.htzs@gmail.com",
@@ -24,6 +23,6 @@ window.SITE_CONFIG = {
   /* Optional: link a public repository or write-up to a project.
      While empty, no "Repository" link is shown. */
   repos: {
-    // "autodidact": "https://github.com/your-username/autodidact",
+    // "autodidact": "https://github.com/hamzatzs/autodidact",
   }
 };

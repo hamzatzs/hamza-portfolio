@@ -544,12 +544,6 @@ ul, ol { margin: 0; padding: 0; }
     radial-gradient(42% 38% at 96% 68%, rgb(var(--c-blue) / .15), transparent 72%),
     linear-gradient(180deg, #050b1b 0%, #071329 48%, #050b1b 100%);
 }
-.section--projects::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: url("../assets/images/projects-atmosphere.png") center 44% / cover no-repeat;
-  opacity: .16; mix-blend-mode: screen;
-  mask-image: linear-gradient(180deg, transparent 0%, #000 12%, #000 82%, transparent 100%);
-}
 .section--projects::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(90deg, rgba(3,8,20,.78), rgba(3,8,20,.36) 48%, rgba(3,8,20,.72)),
@@ -873,8 +867,8 @@ figure figcaption { font-size: var(--fs-xs); color: var(--dim); margin-top: .5re
 /* Scroll reveal (classes added by main.js) */
 .js .reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s var(--ease), transform .8s var(--ease); transition-delay: var(--reveal-delay, 0s); }
 .js .reveal.is-in { opacity: 1; transform: none; }
-/* cards that also have hover transforms: once revealed, hover timing takes over */
-.js .reveal.is-in.skill-group, .js .reveal.is-in.flagship, .js .reveal.is-in.project-card, .js .reveal.is-in.edu-item { transition: opacity .8s var(--ease), transform .4s var(--ease), box-shadow .4s; transition-delay: 0s; }
+/* main.js removes .reveal/.is-in once the entrance has finished,
+   so each card's own hover transition and transform work normally. */
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -985,4 +979,85 @@ figure figcaption { font-size: var(--fs-xs); color: var(--dim); margin-top: .5re
   .section--projects, .section--education, .section--leadership, .section--contact {
     scroll-behavior: auto;
   }
+}
+
+/* =========================================================
+   8. INTERACTIVE EFFECTS (driven by js/fx.js)
+   Tune here:
+   --spot-size  size of the light that follows the cursor inside a tile
+   --spot-alpha strength of that light
+   ========================================================= */
+:root {
+  --spot-size: 260px;
+  --spot-alpha: 0.30;
+  --cursor-light-size: 560px;
+  --cursor-light-alpha: 0.10;
+}
+
+/* ---- tiles: spotlight, colour flash and bright border near the cursor ---- */
+.has-spot {
+  position: relative; isolation: isolate;
+  --s1: var(--t1, var(--ga, var(--c-blue)));
+  --s2: var(--t2, var(--gb, var(--c-violet)));
+}
+.spot {
+  position: absolute; inset: 0; z-index: -1; border-radius: inherit; overflow: hidden; pointer-events: none;
+  opacity: 0; transition: opacity .35s ease;
+  background: radial-gradient(var(--spot-size) circle at var(--mx, 50%) var(--my, 50%),
+              rgb(var(--s1) / var(--spot-alpha)), rgb(var(--s2) / calc(var(--spot-alpha) * .45)) 45%, transparent 72%);
+}
+.has-spot:hover > .spot { opacity: 1; }
+/* colour flash: a short multi-colour bloom that spins out from the cursor on entry */
+.spot::before {
+  content: ""; position: absolute; left: var(--mx, 50%); top: var(--my, 50%);
+  width: 560px; height: 560px; border-radius: 50%; opacity: 0;
+  background: conic-gradient(from 0deg,
+    rgb(var(--c-cyan) / 0), rgb(var(--c-cyan) / .55), rgb(var(--c-blue) / .5),
+    rgb(var(--c-violet) / .6), rgb(var(--c-teal) / .45), rgb(var(--c-cyan) / 0));
+  -webkit-mask-image: radial-gradient(closest-side, #000 15%, transparent 100%);
+          mask-image: radial-gradient(closest-side, #000 15%, transparent 100%);
+  transform: translate(-50%, -50%) scale(.3);
+}
+.is-flash > .spot::before { animation: tile-flash .95s cubic-bezier(.2, .7, .2, 1); }
+@keyframes tile-flash {
+  0%   { opacity: 0;   transform: translate(-50%, -50%) scale(.25) rotate(0deg); }
+  22%  { opacity: .95; }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(1.3) rotate(160deg); }
+}
+/* border highlight that tracks the cursor */
+.spot::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+  background: radial-gradient(calc(var(--spot-size) * .75) circle at var(--mx, 50%) var(--my, 50%),
+              rgb(var(--s2) / .95), rgb(var(--s1) / .55) 40%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* ---- page-wide cursor light ---- */
+.cursor-light {
+  position: fixed; left: 0; top: 0; z-index: 40; pointer-events: none;
+  width: var(--cursor-light-size); height: var(--cursor-light-size);
+  margin: calc(var(--cursor-light-size) / -2) 0 0 calc(var(--cursor-light-size) / -2);
+  border-radius: 50%; mix-blend-mode: screen; opacity: 0; transition: opacity .5s ease;
+  background: radial-gradient(circle, rgb(var(--c-blue) / var(--cursor-light-alpha)) 0%,
+              rgb(var(--c-violet) / calc(var(--cursor-light-alpha) * .5)) 35%, transparent 68%);
+  will-change: transform;
+}
+.cursor-light.is-on { opacity: 1; }
+
+/* ---- particle network + parallax ---- */
+.fx-particles {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  -webkit-mask-image: radial-gradient(ellipse 85% 80% at 55% 45%, #000 35%, transparent 85%);
+          mask-image: radial-gradient(ellipse 85% 80% at 55% 45%, #000 35%, transparent 85%);
+  translate: calc(var(--px, 0px) * -.5) calc(var(--py, 0px) * -.5);
+  transition: translate .6s cubic-bezier(.2, .7, .2, 1);
+}
+.fx .orb { translate: var(--px, 0px) var(--py, 0px); transition: translate 1.2s cubic-bezier(.2, .7, .2, 1); }
+.fx .fx-grid { translate: calc(var(--px, 0px) * .35) calc(var(--py, 0px) * .35); transition: translate .9s cubic-bezier(.2, .7, .2, 1); }
+.fx { inset: -24px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .spot::before, .cursor-light, .fx-particles { display: none; }
 }

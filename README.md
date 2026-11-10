@@ -36,15 +36,15 @@ python3 -m http.server 8000
 
 (Opening `index.html` directly also works for most things.)
 
-## 1. Add your GitHub profile
+## 1. GitHub profile
 
-Open `js/config.js` and fill in:
+The GitHub link is set in `js/config.js`:
 
 ```js
-github: "https://github.com/YOUR-USERNAME",
+github: "https://github.com/hamzatzs",
 ```
 
-While this is empty, all GitHub links stay hidden, so the site never shows a broken link.
+Set it to `""` to hide every GitHub link.
 
 ## 2. Replace image placeholders
 
@@ -95,7 +95,7 @@ Replace `assets/Hamza_Tariq_CV.pdf` with the new file **using the same name**. A
 In `js/config.js`:
 
 ```js
-repos: { "autodidact": "https://github.com/YOUR-USERNAME/autodidact" }
+repos: { "autodidact": "https://github.com/hamzatzs/autodidact" }
 ```
 
 A "View repository" link then appears on the AUTODIDACT case study.
@@ -105,7 +105,7 @@ A "View repository" link then appears on the AUTODIDACT case study.
 ### First time
 
 1. On GitHub, create a new **public** repository, e.g. `portfolio`.
-   (If you name it `YOUR-USERNAME.github.io`, the site will live at `https://YOUR-USERNAME.github.io/` instead of `/portfolio/`.)
+   (If you name it `hamzatzs.github.io`, the site will live at `https://hamzatzs.github.io/` instead of `/portfolio/`.)
 2. Push this folder to it:
 
    ```bash
@@ -114,13 +114,13 @@ A "View repository" link then appears on the AUTODIDACT case study.
    git add .
    git commit -m "Initial portfolio"
    git branch -M main
-   git remote add origin https://github.com/YOUR-USERNAME/portfolio.git
+   git remote add origin https://github.com/hamzatzs/portfolio.git
    git push -u origin main
    ```
 
    No Git on your machine? On the empty repository page choose **uploading an existing file** and drag in the folder contents. Include the hidden `.github` folder and `.nojekyll`. On macOS press Cmd+Shift+. in Finder to show hidden files.
 3. In the repository go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
-4. Open the **Actions** tab. The "Deploy to GitHub Pages" workflow runs and, after about a minute, shows the live URL, e.g. `https://YOUR-USERNAME.github.io/portfolio/`.
+4. Open the **Actions** tab. The "Deploy to GitHub Pages" workflow runs and, after about a minute, shows the live URL, e.g. `https://hamzatzs.github.io/portfolio/`.
 
 ### Updating
 
