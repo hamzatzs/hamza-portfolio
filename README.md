@@ -158,3 +158,25 @@ All theme settings are in the **THEME CONTROLS** block at the top of `css/style.
 Each section has its own class (`.section--hero`, `.section--about` …) if you want to restyle one completely.
 
 Animations (hero load, drifting light, moving grid, scroll reveal) switch off automatically when the visitor's system has "reduce motion" turned on.
+
+## Interactive effects
+
+| Effect | File | How to change it |
+|---|---|---|
+| 3D robot arm in the hero (autonomous pick-and-place, follows the cursor, drag to rotate, tap on phones) | `src/arm3d.js` (source) → `js/arm3d.min.js` (what the site loads) | See "Editing the 3D arm" below |
+| Particle network in the hero and contact sections, tile spotlight and colour flash, cursor light, dot field with click ripples behind the middle sections | `js/fx.js` | Edit directly, no build step. Strength settings are in section 8 of `css/style.css` |
+
+All effects switch off for visitors who have "reduce motion" turned on. If a browser cannot run WebGL, the original 2D arm drawing is shown instead.
+
+To remove an effect, delete its `<script>` line at the bottom of `index.html` (`js/arm3d.min.js` or `js/fx.js`).
+
+### Editing the 3D arm
+
+`js/arm3d.min.js` is `src/arm3d.js` bundled with the parts of [three.js](https://threejs.org) it uses (MIT licence, see `js/THREE-LICENSE.txt`), so the site needs no CDN. After changing `src/arm3d.js`, rebuild once with Node.js installed:
+
+```bash
+npm install three esbuild
+npx esbuild src/arm3d.js --bundle --minify --format=iife --outfile=js/arm3d.min.js
+```
+
+Useful values near the top of `src/arm3d.js`: link lengths (`L1`, `L2`), camera position (`view`), colours (taken from the CSS accent variables), and the task speed (`/ 0.42` in `segDuration`).

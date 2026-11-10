@@ -82,6 +82,13 @@
       </div>
 
       <div class="hero-drawing">
+        <div class="arm-stage" id="arm-stage">
+        <div class="arm-hud" aria-hidden="true">
+          <span class="arm-hud-title">Inverse kinematics, 3D manipulator</span>
+          <span data-hud="mode" class="arm-hud-mode">Autonomous: pick and place</span>
+          <span data-hud="q1"></span><span data-hud="q2"></span><span data-hud="q3"></span><span data-hud="p"></span>
+        </div>
+        <p class="arm-hint"><span class="hint-mouse">Hover to guide the gripper. Drag to rotate.</span><span class="hint-touch">Tap to send the gripper. Swipe to rotate.</span></p>
         <svg id="arm-drawing" class="drawing" viewBox="0 0 520 470" role="img" aria-labelledby="arm-title">
           <title id="arm-title">Animated technical drawing of a two-link robot arm following a figure-eight path, solved with inverse kinematics</title>
           <!-- sheet frame -->
@@ -121,9 +128,10 @@
             <path class="ln-brass" d="M-12,0h6M6,0h6M0,-12v6M0,6v6"/>
           </g>
         </svg>
+        </div>
         <div class="title-block" aria-hidden="true">
           <div>Drawn by</div><div><strong>Hamza Tariq</strong></div>
-          <div>Subject</div><div>Two-link manipulator, IK study</div>
+          <div>Subject</div><div>3D manipulator, IK + pick-and-place</div>
           <div>Location</div><div>Erlangen, DE</div>
           <div>Discipline</div><div>Mechanical + Autonomy</div>
         </div>
@@ -476,5 +484,6 @@
 <script src="js/config.js"></script>
 <script src="js/main.js"></script>
 <script src="js/fx.js" defer></script>
+<script src="js/arm3d.min.js" defer></script>
 </body>
 </html>

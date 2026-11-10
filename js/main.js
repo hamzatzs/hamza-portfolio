@@ -175,15 +175,17 @@
   pose(phase);
   if (reduceMotion) return;
 
+  var stage = document.getElementById("arm-stage");
   function frame(ts) {
     if (!running) return;
+    if (stage && stage.classList.contains("is-3d")) { running = false; return; }  // 3D arm took over
     if (start === null) start = ts - phase / 0.00042;
     phase = (ts - start) * 0.00042;
     pose(phase);
     requestAnimationFrame(frame);
   }
   function update() {
-    var should = visible && !document.hidden;
+    var should = visible && !document.hidden && !(stage && stage.classList.contains("is-3d"));
     if (should && !running) { running = true; start = null; requestAnimationFrame(frame); }
     else if (!should) running = false;
   }

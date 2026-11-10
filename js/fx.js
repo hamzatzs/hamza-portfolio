@@ -5,6 +5,7 @@
    3. Particle network in the hero + contact backgrounds that
       reacts to the cursor
    4. Gentle parallax of the ambient glows
+   5. Dot field behind the sections below the hero (cursor + click ripples)
 
    All of this is skipped when the visitor prefers reduced motion.
    Cursor-only effects are skipped on touch screens.
@@ -200,6 +201,155 @@
   Array.prototype.forEach.call(document.querySelectorAll(".section--hero .fx, .section--contact .fx"), function (fx) {
     new Field(fx);
   });
+
+  /* =========================================================
+     5. DOT FIELD for the sections below the hero
+        A grid of faint dots that scrolls with the page. Near the cursor
+        the dots light up, grow and are pushed outwards; a click sends a
+        ripple across the field; a slow light wave keeps it alive when idle.
+        It fades out while the hero or contact section fills the screen
+        (they have their own particle network).
+     ========================================================= */
+  (function dotField() {
+    var heroEl = document.querySelector(".section--hero, .cs-hero");
+    if (!heroEl) return;
+    var contactEl = document.querySelector(".section--contact");
+
+    var canvas = document.createElement("canvas");
+    canvas.className = "dot-field";
+    canvas.setAttribute("aria-hidden", "true");
+    document.body.appendChild(canvas);
+    var ctx = canvas.getContext("2d");
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    var W = 0, H = 0, S = 30, R = 190;
+    var heroR = 1, contactR = 0, fade = 0, raf = 0, t0 = performance.now();
+    var cur = { x: -9999, y: -9999 }, ripples = [];
+
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + "px"; canvas.style.height = H + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      S = W < 700 ? 26 : 30;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    if ("IntersectionObserver" in window) {
+      var th = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1];
+      new IntersectionObserver(function (e) {
+        e.forEach(function (en) {
+          var ratio = en.intersectionRect.height / window.innerHeight;
+          if (en.target === heroEl) heroR = ratio; else contactR = ratio;
+        });
+        start();
+      }, { threshold: th }).observe(heroEl);
+      if (contactEl) new IntersectionObserver(function (e) {
+        contactR = e[0].intersectionRect.height / window.innerHeight; start();
+      }, { threshold: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1] }).observe(contactEl);
+    } else { heroR = 0; }
+
+    window.addEventListener("pointerdown", function (e) {
+      ripples.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+      if (ripples.length > 4) ripples.shift();
+      start();
+    }, { passive: true });
+    moveSubs.push(start);
+    window.addEventListener("scroll", start, { passive: true });
+
+    // dots are only drawn in empty space, never over cards or text
+    var AVOID = [
+      ".section-head > *", ".about-copy", ".area", ".areas-note", ".skill-group", ".role-feature", ".earlier-title",
+      ".tl-item", ".flagship", ".project-card", ".minor-projects", ".edu-item", ".lead-item", ".two-col > div",
+      ".contact-panel", ".cs-layout > div", ".cs-toc", ".proj-entry > *", ".cs-next", ".site-footer", ".cs-hero"
+    ].join(",");
+    var avoidEls = Array.prototype.slice.call(document.querySelectorAll(AVOID));
+    var rects = [];
+    function collectRects() {
+      rects.length = 0;
+      for (var i = 0; i < avoidEls.length; i++) {
+        var r = avoidEls[i].getBoundingClientRect();
+        if (r.bottom < -10 || r.top > H + 10 || !r.width) continue;
+        rects.push(r.left - 8, r.top - 8, r.right + 8, r.bottom + 8);
+      }
+    }
+    function blocked(x, y) {
+      for (var i = 0; i < rects.length; i += 4) {
+        if (x > rects[i] && x < rects[i + 2] && y > rects[i + 1] && y < rects[i + 3]) return true;
+      }
+      return false;
+    }
+
+    var BUCKETS = 6, buckets = [];
+    for (var b = 0; b < BUCKETS; b++) buckets.push([]);
+
+    function frame(now) {
+      raf = 0;
+      var goal = Math.max(0, 1 - Math.max(heroR, contactR) * 1.6);
+      fade += (goal - fade) * 0.12;
+      if (fade < 0.01 && goal === 0) { ctx.clearRect(0, 0, W, H); fade = 0; return; }
+      if (document.hidden) return;
+
+      // smooth cursor
+      if (pointer.active && finePointer) {
+        if (cur.x < -1000) { cur.x = pointer.x; cur.y = pointer.y; }
+        cur.x += (pointer.x - cur.x) * 0.2; cur.y += (pointer.y - cur.y) * 0.2;
+      } else { cur.x = -9999; cur.y = -9999; }
+
+      var t = (now - t0) / 1000;
+      ripples = ripples.filter(function (r) { return now - r.t < 1600; });
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalAlpha = fade;
+
+      var offY = -(window.scrollY % S);
+      collectRects();
+      for (b = 0; b < BUCKETS; b++) buckets[b].length = 0;
+
+      for (var y = offY + S / 2; y < H + S; y += S) {
+        for (var x = S / 2; x < W + S; x += S) {
+          if (blocked(x, y)) continue;
+          // idle: a slow diagonal light wave
+          var w = 0.5 + 0.5 * Math.sin(t * 0.7 - (x * 0.006 + y * 0.004));
+          var k = 0, dx = 0, dy = 0;
+          var cx = x - cur.x, cy = y - cur.y, d2 = cx * cx + cy * cy;
+          if (d2 < R * R) {
+            var d = Math.sqrt(d2) || 1; k = 1 - d / R; k *= k;
+            dx += cx / d * k * 12; dy += cy / d * k * 12;
+          }
+          for (var i = 0; i < ripples.length; i++) {
+            var rp = ripples[i], age = (now - rp.t) / 1000, rad = age * 520;
+            var ex = x - rp.x, ey = y - rp.y, dd = Math.sqrt(ex * ex + ey * ey) || 1;
+            var band = 1 - Math.abs(dd - rad) / 46;
+            if (band > 0) {
+              var life = 1 - age / 1.6, f = band * life;
+              k = Math.max(k, f * 0.85); dx += ex / dd * f * 8; dy += ey / dd * f * 8;
+            }
+          }
+          if (k > 0.04) {
+            // lit dot near cursor / ripple: drawn individually, colour shifts cyan -> violet with distance
+            var col = k > 0.45 ? C.cyan : (k > 0.18 ? C.blue : C.violet);
+            ctx.fillStyle = "rgba(" + col + "," + (0.18 + k * 0.75).toFixed(3) + ")";
+            ctx.beginPath(); ctx.arc(x + dx, y + dy, 1.1 + k * 2.4, 0, 6.283); ctx.fill();
+          } else {
+            buckets[Math.min(BUCKETS - 1, (w * BUCKETS) | 0)].push(x, y);
+          }
+        }
+      }
+      // faint dots, batched by brightness
+      for (b = 0; b < BUCKETS; b++) {
+        var arr = buckets[b]; if (!arr.length) continue;
+        ctx.fillStyle = "rgba(" + C.blue + "," + (0.07 + b * 0.025).toFixed(3) + ")";
+        ctx.beginPath();
+        for (var n = 0; n < arr.length; n += 2) ctx.rect(arr[n] - 0.75, arr[n + 1] - 0.75, 1.5, 1.5);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      raf = requestAnimationFrame(frame);
+    }
+    function start() { if (!raf) raf = requestAnimationFrame(frame); }
+    document.addEventListener("visibilitychange", start);
+    start();
+  })();
 
   /* =========================================================
      4. PARALLAX of ambient glows (hero, contact, case-study headers)

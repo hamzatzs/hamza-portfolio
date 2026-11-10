@@ -1061,3 +1061,43 @@ figure figcaption { font-size: var(--fs-xs); color: var(--dim); margin-top: .5re
 @media (prefers-reduced-motion: reduce) {
   .spot::before, .cursor-light, .fx-particles { display: none; }
 }
+
+/* =========================================================
+   9. 3D ROBOT ARM (js/arm3d.min.js) + DOT FIELD (js/fx.js)
+   ========================================================= */
+.arm-stage {
+  position: relative; aspect-ratio: 520 / 470; border-radius: 10px;
+}
+.arm-stage.is-3d {
+  background:
+    radial-gradient(70% 60% at 50% 60%, rgb(var(--c-blue) / .14), transparent 70%),
+    rgba(8, 13, 32, .45);
+  border: 1px solid rgb(var(--c-blue) / .22);
+  box-shadow: inset 0 0 60px -20px rgb(var(--c-blue) / .35);
+}
+.arm-stage > svg { width: 100%; height: auto; }
+.arm-stage.is-3d > svg { display: none; }
+.arm-canvas { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; cursor: crosshair; touch-action: pan-y; outline: none; }
+.arm-canvas.is-dragging { cursor: grabbing; }
+.arm-hud, .arm-hint { display: none; }
+.is-3d .arm-hud {
+  position: absolute; left: 16px; top: 14px; z-index: 1; pointer-events: none;
+  display: grid; gap: 3px; font: 500 11px/1.35 var(--mono); color: #8d9bbb; white-space: pre;
+}
+.arm-hud-title { color: rgb(var(--c-cyan)); margin-bottom: 2px; }
+.arm-hud-mode { color: var(--text); margin-bottom: 4px; }
+.arm-hud-mode::before {
+  content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: 1px;
+  background: rgb(var(--c-teal)); box-shadow: 0 0 10px rgb(var(--c-teal) / .9);
+}
+.is-3d .arm-hint {
+  display: block; position: absolute; right: 14px; bottom: 10px; margin: 0; z-index: 1; pointer-events: none;
+  font: 500 11px var(--mono); color: #7f8db0;
+}
+.hint-touch { display: none; }
+@media (hover: none) { .hint-mouse { display: none; } .hint-touch { display: inline; } }
+@media (max-width: 480px) { .is-3d .arm-hud span:nth-child(n+3) { display: none; } }
+
+/* dot field: above section backgrounds, blended so text stays crisp */
+.dot-field { position: fixed; inset: 0; z-index: 30; pointer-events: none; mix-blend-mode: screen; }
+@media print { .dot-field, .cursor-light { display: none; } }
