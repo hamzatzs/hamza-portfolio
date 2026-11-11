@@ -1,5 +1,22 @@
 # Hamza Tariq — Engineering Portfolio
 
+**Live site: https://hamzatzs.github.io/hamza-portfolio/**
+
+My personal engineering portfolio. I'm an M.Sc. Autonomy Technologies student at FAU Erlangen-Nürnberg with a mechanical engineering background and 1.5+ years in automotive production planning.
+
+**What's on the site**
+- **AUTODIDACT**: case study of the self-improving robot learning loop my team built at the Siemens Healthineers Robotics & AI Hackathon 2026 (semi-finalist)
+- **Bat-inspired micro UAV**: my final-year project (morphing-wing mechanism, CFD/FEA, MSC Adams, Arduino/Raspberry Pi control)
+- Experience, skills, education and a downloadable CV
+
+**Built with:** plain HTML, CSS and JavaScript (no framework, no build step), a three.js robot arm in the hero section, and automatic deployment to GitHub Pages with GitHub Actions.
+
+---
+
+## Developer notes
+
+Everything below is for maintaining the site.
+
 A static personal portfolio (HTML, CSS, vanilla JavaScript). No build step, no frameworks, no backend. It is designed to be hosted free on **GitHub Pages**.
 
 ## Project structure
